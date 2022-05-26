@@ -35,4 +35,6 @@ void Remote_delLine(int);
 
 char *Remote_getEntryFilePath();
 
+void Remote_showEntries();
+
 #endif // REMOTE_H

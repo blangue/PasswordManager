@@ -8,8 +8,9 @@ void Remote_askAction(){
     printf("You want to:\r\n");
     printf("1 - Add new pwd entry\r\n");
     printf("2 - Delete an entry\r\n");
-    printf("3 - Show entries\r\n");
+    printf("3 - Display entries\r\n");
     printf("q - Quit\r\n");
+    printf("\r\n");
 }
 
 bool Remote_onActionResponse(char response){
@@ -21,9 +22,17 @@ bool Remote_onActionResponse(char response){
         case '2':
         Remote_delEntry();
         break;
+        case '3':
+        Remote_showEntries();
+        break;
         case 'q':
         l_continue = false;
         break;
+        default:
+        printf(RED);
+        printf("Wrong key pressed\r\n");
+        printf(DEFAUT);
+        printf("\n");
     }
     return l_continue;
 }
@@ -153,7 +162,18 @@ void Remote_delLine(int i){
     // Rewrite file without the new content
     file = fopen(REMOTE_FILE_NAME, "w");
     if (file){
-        fprintf(file, content);
+        fprintf(file, "%s", content);
         fclose(file);
     }
+}
+
+void Remote_showEntries(){
+    FILE * file = fopen(REMOTE_FILE_NAME, "r");
+    char l_char = 0;
+    printf("Entry Id | Login | Password \r\n");
+    while ((l_char = fgetc(file)) != EOF){
+        printf("%c", l_char);
+    }
+    fclose(file);
+    printf("\r\n");
 }
