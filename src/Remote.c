@@ -1,6 +1,7 @@
 #include "common.h"
 #include "Remote.h"
 #include <string.h>
+#include <assert.h>
 
 
 void Remote_askAction(){
@@ -8,25 +9,32 @@ void Remote_askAction(){
     printf("1 - Add new pwd entry\r\n");
     printf("2 - Delete an entry\r\n");
     printf("3 - Show entries\r\n");
+    printf("q - Quit\r\n");
 }
 
-void Remote_onActionResponse(char response){
+bool Remote_onActionResponse(char response){
+    bool l_continue = true; 
     switch (response) {
         case '1':
         Remote_addEntry();
         break;
         case '2':
         Remote_delEntry();
+        break;
+        case 'q':
+        l_continue = false;
+        break;
     }
+    return l_continue;
 }
 
 void Remote_addEntry(){
     FILE *file;
-    file = fopen(REMOTE_FILE_PATH, "a");
+    file = fopen(REMOTE_FILE_NAME, "a");
     if (file)
     {
     Entry new_entry = Remote_getEntry();
-    fprintf(file, "%s,%s,%s;\r\n", new_entry.id, new_entry.login, new_entry.pwd);
+    fprintf(file, "%s %s %s;\r\n", new_entry.id, new_entry.login, new_entry.pwd);
     fclose(file);
     } 
     else {
@@ -51,53 +59,54 @@ Entry Remote_getEntry(){
 }
 
 void Remote_delEntry(){
-    char *seek = Remote_getDomain();
-    LineInfo line = Remote_findEntry(seek);
-    if (line.line == NULL)
+    char seek [ID_MAX_LENGTH];
+    Remote_getDomain(seek);
+    int index = Remote_findEntry(seek);
+    if (index == -1)
     {
-        printf("No matching entry found\r\n");
+        printf(RED);
+        printf("No existing matching entry was found\r\n\n");
+        printf(DEFAUT);        
     }
     else
     {
-        printf("The entry was deleted successfully\r\n");
-        Remote_delLine(line.line_index);
+        Remote_delLine(index);
+        printf(GREEN);
+        printf("The entry was deleted successfully\r\n\n");
+        printf(DEFAUT);
     }
 }
 
-char Remote_getDomain(){
-    char domain [ID_MAX_LENGTH];
+void Remote_getDomain(char domain []){
     printf("Enter a domain to delete the entry of:\r\n");
     scanf("%s", domain);
-    return *domain;
 }
 
-LineInfo Remote_findEntry(char *id){
-    FILE *file;
-    LineInfo line;
-    file = fopen(REMOTE_FILE_PATH, "r");
+int Remote_findEntry(char * id){
+    int line_index = -1;
+    FILE *file = fopen(REMOTE_FILE_NAME, "r+");
     int lines = Remote_getNbLines();
-    char l_line[MAX_ENTRY_LENGTH];
-    int index = 0;
+    char domain[15];
     if (file)
     {
         bool found = false;
         for (int i = 0; i < lines && !found; i++){
-            fscanf(file, "%s\r\n", l_line);
-            found = strcmp(l_line, id) == strlen(id); // boubou_est_gentil, boubou --> 6
-            line.line_index = i;
+            fscanf(file, "%s %*s %*s", domain);
+            found = strcmp(domain, id) == 0; // Compare domain with the wanted one
+            printf("Comparing: %s and %s --> %s\r\n", domain, id, found ? "Found!" : "Fail");
+            line_index = found? i : line_index;
         }
     }
     else {
         printf("Unable to open entry file\r\n");
     }  
-    strcpy(line.line, l_line);
     fclose(file);
-    return line;
+    return line_index;
 }
 
 int Remote_getNbLines(){
     // count the number of lines in the file called filename                                    
-    FILE *file = fopen(REMOTE_FILE_PATH, "r");
+    FILE *file = fopen(REMOTE_FILE_NAME, "r");
     int ch=0;
     int lines=1;
 
@@ -115,21 +124,36 @@ int Remote_getNbLines(){
 
 void Remote_delLine(int i){
     FILE *file;
-    file = fopen(REMOTE_FILE_PATH, "w");
-    char content[MAX_ENTRY_LENGTH * (MAX_ENTRIES-1)];
-    int ch=0;
-    int lines=0;
+    file = fopen(REMOTE_FILE_NAME, "r");
+    //Getting the file length
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *content = (char *) calloc(size, sizeof(char)); //Length of the file
+    int ascii=0;
+    int current_line=0;
+    char ch = 0; 
+    int cursor = 0;
 
 
-    while ((ch = fgetc(file)) != EOF)
+    while ((ascii = fgetc(file)) != EOF)
+    {
+        ch = ascii;
+        if (current_line != i)
         {
-        if (lines != i)
-        {
-            strcat(content, ch);
+            content[cursor] = ascii;
+            cursor++;
         }
         if (ch == '\n'){
-            lines++;
+            current_line++;
         }
     }
     fclose(file);
+    // Rewrite file without the new content
+    file = fopen(REMOTE_FILE_NAME, "w");
+    if (file){
+        fprintf(file, content);
+        fclose(file);
+    }
 }

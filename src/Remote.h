@@ -1,7 +1,8 @@
 #ifndef REMOTE_H
 #define REMOTE_H
 
-#define REMOTE_FILE_PATH ("remote.entries")
+#define REMOTE_FILE_NAME ("remote.entries")
+#define FILE_SEPARATOR ("/")
 #define ID_MAX_LENGTH (30)
 #define LOGIN_MAX_LENGTH (40)
 #define PWD_MAX_LENGTH (25)
@@ -14,14 +15,9 @@ typedef struct {
     char pwd[PWD_MAX_LENGTH];
 } Entry;
 
-typedef struct {
-    int line_index;
-    char line[MAX_ENTRY_LENGTH];
-} LineInfo;
-
 void Remote_askAction();
 
-void Remote_onActionResponse(char);
+bool Remote_onActionResponse(char);
 
 void Remote_addEntry();
 
@@ -29,12 +25,14 @@ Entry Remote_getEntry();
 
 void Remote_delEntry();
 
-char Remote_getDomain(); 
+void Remote_getDomain(char []); 
 
-LineInfo Remote_findEntry(char *id);
+int Remote_findEntry(char*);
 
 int Remote_getNbLines();
 
 void Remote_delLine(int);
+
+char *Remote_getEntryFilePath();
 
 #endif // REMOTE_H
