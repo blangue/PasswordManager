@@ -2,6 +2,8 @@
 #define ENCRYPTION_H
 #include <unistd.h>
 #include "common.h"
+#include <limits.h>
+#include <assert.h>
 
 #define MAX_PWD_SIZE (30)
 
