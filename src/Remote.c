@@ -5,6 +5,7 @@
 
 
 void Remote_askAction(){
+    printf("----- MAIN MENU -----\r\n\n");
     printf("You want to:\r\n");
     printf("1 - Add new pwd entry\r\n");
     printf("2 - Delete an entry\r\n");
