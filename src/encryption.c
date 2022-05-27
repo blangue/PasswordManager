@@ -25,8 +25,8 @@ void encode(char * p_password, char * p_key, char * p_result){
         u_int16_t mod1 = (offset * p_password[i]) / 93;
         u_int16_t mod2 = mod1 / CHAR_MAX;
         mod1 %= CHAR_MAX;
-        modulos[i*2] = mod1; //The rest
-        modulos[i*2 + 1] = mod2; // The quotient
+        modulos[i*2] = (mod1 == 0) ? -1 : mod1; //The rest
+        modulos[i*2 + 1] = (mod2 == 0) ? -1 : mod2; // The quotient
         i++;
     }
     memset(p_result, 0, 2 * i + 1);
@@ -64,9 +64,11 @@ void decode(char * p_password, char * p_key, char * p_result){
 
     for (size_t i = 0; i < strlen(incomingStr); i++)
     {
-        u_int32_t temp;
+        u_int32_t temp, rest, quotient;
         temp = incomingStr[i] - 33;
-        temp += 93 * (incomingModulos[i * 2] + incomingModulos[i * 2 + 1] * CHAR_MAX);
+        rest = (incomingModulos[i * 2] == -1) ? 0 : incomingModulos[i * 2];
+        quotient = ((incomingModulos[i * 2 + 1] == -1) ? 0 : incomingModulos[i * 2 + 1]);
+        temp += 93 * (rest + quotient * CHAR_MAX);
         temp /= offset;
         assert(temp <= UCHAR_MAX);
         p_result[i] = temp;
