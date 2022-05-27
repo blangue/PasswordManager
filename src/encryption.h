@@ -5,7 +5,8 @@
 #include <limits.h>
 #include <assert.h>
 
-#define MAX_PWD_SIZE (30)
+#define MAX_PWD_LENGTH (30)
+#define MAX_ENCYPTED_PWD_SIZE (MAX_PWD_LENGTH * 3 + 1)
 
 void encode(char *, char *, char*);
 

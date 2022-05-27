@@ -2,6 +2,7 @@
 #include "Remote.h"
 #include <string.h>
 #include <assert.h>
+#include "encryption.h"
 
 
 void Remote_askAction(){
@@ -43,8 +44,20 @@ void Remote_addEntry(){
     file = fopen(REMOTE_FILE_NAME, "a");
     if (file)
     {
-    Entry new_entry = Remote_getEntry();
-    fprintf(file, "%s %s %s;\r\n", new_entry.id, new_entry.login, new_entry.pwd);
+    Entry *new_entry;
+    new_entry = malloc(sizeof(Entry));
+    new_entry = Remote_getEntry();
+    char encryptedPwd[MAX_ENCYPTED_PWD_SIZE];
+
+    // Getting key
+    system("stty -echo");
+    printf("Please enter your key. It is a simple word that you will have to recall in order to be able to decrypt the passwords that you already encrypted with.\r\n");
+    system("stty echo");
+    
+    char key[21];
+    scanf("%20s", key);
+    encode(new_entry->pwd, key, encryptedPwd);
+    fprintf(file, "%s %s %s;\r\n", new_entry->id, new_entry->login, encryptedPwd);
     fclose(file);
     } 
     else {
@@ -53,16 +66,15 @@ void Remote_addEntry(){
 }
 
 
-Entry Remote_getEntry(){
-    Entry new_entry;
-    calloc(1, sizeof(Entry)+1);
+Entry * Remote_getEntry(){
+    Entry *new_entry = malloc(sizeof(Entry));
     printf("Enter the id of the entry (domain name for instance):\r\n");
-    scanf("%s", new_entry.id);
+    scanf("%s", new_entry->id);
     printf("Enter the login of the entry:\r\n");
-    scanf("%s", new_entry.login);
+    scanf("%s", new_entry->login);
     printf("Enter the password of the entry:\r\n");
     system("stty -echo");
-    scanf("%s", new_entry.pwd);
+    scanf("%s", new_entry->pwd);
     system("stty echo");
 
     return new_entry;

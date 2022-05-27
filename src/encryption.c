@@ -2,7 +2,7 @@
 
 void encode(char * p_password, char * p_key, char * p_result){
     // Check password length
-    if (sizeof(p_password) > MAX_PWD_SIZE)
+    if (sizeof(p_password) > MAX_PWD_LENGTH)
     {
         TRACE("Password to encode is too long, aborting...");
         exit(1);
@@ -39,17 +39,17 @@ void encode(char * p_password, char * p_key, char * p_result){
 
 void decode(char * p_password, char * p_key, char * p_result){
     // Check password length
-    if (sizeof(p_password) > MAX_PWD_SIZE)
+    if (sizeof(p_password) > MAX_PWD_LENGTH)
     {
         TRACE("Password to encode is too long, aborting...");
         exit(1);
     }   
 
-    char *incomingStr = malloc(MAX_PWD_SIZE * 2);
-    memset(incomingStr, 0, MAX_PWD_SIZE);
+    char *incomingStr = malloc(MAX_PWD_LENGTH * 2);
+    memset(incomingStr, 0, MAX_PWD_LENGTH);
     strcpy(incomingStr, strtok(p_password, "\171"));
-    char incomingModulos[MAX_PWD_SIZE];
-    memset(incomingModulos, 0, MAX_PWD_SIZE);
+    char incomingModulos[MAX_PWD_LENGTH];
+    memset(incomingModulos, 0, MAX_PWD_LENGTH);
     strcpy(incomingModulos, strtok(NULL, "\171"));
     
 
